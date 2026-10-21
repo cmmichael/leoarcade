@@ -350,7 +350,7 @@ const G={
   box:new THREE.BoxGeometry(1,1,1),sph:new THREE.SphereGeometry(1,24,16),lo:new THREE.SphereGeometry(1,10,8),
   cyl:new THREE.CylinderGeometry(1,1,1,20),cyl8:new THREE.CylinderGeometry(1,1,1,8),cone:new THREE.ConeGeometry(1,1,18),
   plane:new THREE.PlaneGeometry(1,1),circle:new THREE.CircleGeometry(1,24),
-  curl:new THREE.TorusGeometry(1,.68,6,10),ring:new THREE.TorusGeometry(1,.06,6,26),
+  ring:new THREE.TorusGeometry(1,.06,6,26),
   basket:new THREE.CylinderGeometry(.55,.45,.62,22,1,true),bowl:new THREE.CylinderGeometry(.34,.26,.16,24),
   bucket:new THREE.CylinderGeometry(.36,.3,.55,22,1,true),half:new THREE.TorusGeometry(.36,.022,6,20,Math.PI),
   pot:new THREE.CylinderGeometry(.33,.24,.45,18),shade:new THREE.CylinderGeometry(.3,.5,.6,18,1,true),
@@ -359,6 +359,8 @@ const G={
 function lumpy(geo,amp,f){const p=geo.attributes.position,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);const n=Math.sin(v.x*f+1.3)*Math.sin(v.y*f*1.1+.7)*Math.sin(v.z*f*.9+2.1)+.5*Math.sin(v.x*f*2.3+v.z*f*1.7)*Math.sin(v.y*f*2.1+.4);p.setXYZ(i,v.x*(1+amp*n),v.y*(1+amp*n*.6),v.z*(1+amp*n));}geo.computeVertexNormals();return geo;}
 G.lumpy=lumpy(new THREE.SphereGeometry(1,44,32),.07,9);
 G.lumpyArm=lumpy(new THREE.CylinderGeometry(1,1,1,28,12),.1,11);
+G.ruff=lumpy(new THREE.SphereGeometry(1,56,40),.1,15);
+G.lumpyHead=lumpy(new THREE.SphereGeometry(1,48,36),.03,10);
 const MC={};
 function L(color,o){const k='L'+color+(o?JSON.stringify(o):'');return MC[k]||(MC[k]=new THREE.MeshLambertMaterial(Object.assign({color},o||{})));}
 function S(color,rough=.6,metal=0,o){const k='S'+color+rough+metal+(o?JSON.stringify(o):'');return MC[k]||(MC[k]=new THREE.MeshStandardMaterial(Object.assign({color,roughness:rough,metalness:metal},o||{})));}
@@ -371,7 +373,7 @@ const BRIGHT=[0xe8304f,0x2f86e0,0xf5be2c,0x9a5ad6,0x15a36f,0xf77f2e,0xff7fbf];
 const M={
   fur:new THREE.MeshStandardMaterial({map:T.fur,bumpMap:T.fur,bumpScale:.004,roughness:1}),
   cream:new THREE.MeshStandardMaterial({map:T.cream,bumpMap:T.cream,bumpScale:.004,roughness:1}),
-  curlG:S(0x80848d,1),curlL:S(0xa9a7a3,1),curlC:S(0xe6dac8,1),curlC2:S(0xc9b8a2,1),puffL:new THREE.MeshStandardMaterial({map:T.cream,color:0xd7d3cc,roughness:1}),
+  puffL:new THREE.MeshStandardMaterial({map:T.cream,color:0xd7d3cc,roughness:1}),
   iris:new THREE.MeshStandardMaterial({color:0xc4be5c,roughness:.2,emissive:0x2c2c08}),
   pupil:S(0x0e0e10,.15),rim:S(0x3b3b40,.5),glint:B(0xffffff),earIn:S(0xe8aaa7,.8),nose:S(0xc8737a,.45),stripe:S(0x5c6069,1),bean:S(0xd98c95,.6),
   shadow:new THREE.MeshBasicMaterial({map:T.shadow,transparent:true,depthWrite:false,opacity:.75}),
@@ -384,41 +386,27 @@ function glowMat(color,opacity=.55){return new THREE.SpriteMaterial({map:T.glow,
 const GLOW={fly:glowMat(0xffe46b),mosq:glowMat(0xff8fd8),tuna:glowMat(0x7fe3ff,.7),lamp:glowMat(0xffc46b,.7),firefly:glowMat(0xd8ff7a,.9)};
 function sprite(mat,x,y,z,s,parent){const sp=new THREE.Sprite(mat);sp.position.set(x,y,z);sp.scale.set(s,s,s);if(parent)parent.add(sp);return sp;}
 
-/* curly-fur bumps: little torus rings scattered on an ellipsoid surface */
-function addCurls(parent,c,r,n,mats,size,ok){
-  for(let i=0;i<n;i++){
-    const u=new THREE.Vector3(rand(-1,1),rand(-1,1),rand(-1,1)).normalize();
-    if(ok&&!ok(u)){i--;continue;}
-    const m=mk(G.curl,pick(mats),c.x+u.x*r.x,c.y+u.y*r.y,c.z+u.z*r.z,size*rand(.7,1.25),parent);
-    m.rotation.set(rand(0,TAU),rand(0,TAU),rand(0,TAU));
-  }
-}
 
 /* ---------- the cat (title screen and cover): modelled on a curly grey Selkirk Rex ---------- */
 function makeCat(){
   const cat=new THREE.Group();
   mk(G.lumpy,M.fur,0,.2,-.05,.27,.21,.42,cat);
   mk(G.lumpy,M.fur,.15,.16,-.27,.16,.15,.2,cat);mk(G.lumpy,M.fur,-.15,.16,-.27,.16,.15,.2,cat);
-  mk(G.lumpy,M.cream,0,.26,.2,.215,.22,.17,cat);
-  addCurls(cat,V3(0,.2,-.05),V3(.27,.21,.42),170,[M.curlG,M.curlL,M.curlG],.018,u=>u.y>-.35);
-  addCurls(cat,V3(0,.26,.2),V3(.215,.22,.17),110,[M.curlC,M.curlC2,M.curlC],.019,u=>u.z>-.1&&u.y>-.5);
+  mk(G.ruff,M.cream,0,.265,.235,.225,.225,.165,cat);
+  mk(G.ruff,M.cream,0,.17,.24,.17,.13,.12,cat);
   for(const sx of[-1,1]){
-    const leg=mk(G.cyl,M.fur,sx*.1,.06,.32,.056,.22,.056,cat);leg.rotation.x=Math.PI/2;
-    mk(G.sph,M.fur,sx*.1,.05,.44,.07,.052,.08,cat);
-    for(let i=0;i<3;i++)mk(G.sph,M.fur,sx*.1+(i-1)*.032,.045,.508,.025,.022,.024,cat);
-    addCurls(cat,V3(sx*.1,.07,.33),V3(.06,.06,.12),14,[M.curlG,M.curlL],.018,u=>u.y>-.2);
+    const leg=mk(G.lumpyArm,M.fur,sx*.1,.06,.32,.058,.22,.058,cat);leg.rotation.x=Math.PI/2;
+    mk(G.lumpy,M.fur,sx*.1,.05,.44,.072,.054,.082,cat);
+    for(let i=0;i<3;i++)mk(G.lumpy,M.fur,sx*.1+(i-1)*.032,.048,.505,.026,.024,.026,cat);
   }
   const curve=new THREE.CatmullRomCurve3([V3(.05,.14,-.44),V3(.24,.07,-.42),V3(.34,.05,-.16),V3(.31,.05,.1),V3(.2,.05,.26)]);
-  cat.add(new THREE.Mesh(new THREE.TubeGeometry(curve,30,.052,10,false),M.fur));
-  mk(G.sph,M.fur,.2,.05,.26,.052,cat);
-  curve.getSpacedPoints(16).forEach(p=>{const m=mk(G.curl,pick([M.curlG,M.curlL]),p.x+rand(-.03,.03),p.y+rand(0,.04),p.z+rand(-.03,.03),.02,cat);m.rotation.set(rand(0,TAU),rand(0,TAU),0);});
+  curve.getSpacedPoints(18).forEach((p,i)=>{const r=.058-i*.0008;mk(G.lumpy,M.fur,p.x,p.y,p.z,r,r,r,cat).rotation.set(i,i*.7,0);});
 
   const head=new THREE.Group();head.position.set(0,.45,.27);cat.add(head);
-  mk(G.sph,M.fur,0,0,0,.2,.176,.172,head);
-  addCurls(head,V3(0,0,0),V3(.2,.176,.172),50,[M.curlG,M.curlL],.013,u=>u.z<.25);
+  mk(G.lumpyHead,M.fur,0,0,0,.2,.176,.172,head);
   const eyes=[];
   for(const sx of[-1,1]){
-    mk(G.sph,M.fur,sx*.095,-.055,.055,.1,.088,.095,head);
+    mk(G.lumpyHead,M.fur,sx*.095,-.055,.055,.1,.088,.095,head);
     mk(G.sph,M.cream,sx*.036,-.077,.142,.052,.043,.046,head);
     const eye=new THREE.Group();eye.position.set(sx*.074,.014,.138);head.add(eye);
     mk(G.sph,M.rim,0,0,-.004,.05,.05,.03,eye);
@@ -429,7 +417,7 @@ function makeCat(){
     const ear=new THREE.Group();ear.position.set(sx*.112,.128,-.005);ear.rotation.set(-.1,0,-sx*.36);head.add(ear);
     mk(G.cone,M.fur,0,.065,0,.072,.15,.045,ear);
     mk(G.cone,M.earIn,0,.058,.02,.05,.115,.018,ear);
-    for(let i=0;i<4;i++){const m=mk(G.curl,M.curlC,rand(-.02,.02),rand(.02,.07),.035,.012,ear);m.rotation.set(rand(0,3),rand(0,3),0);}
+    mk(G.lumpy,M.cream,0,.03,.03,.022,.03,.012,ear);
   }
   mk(G.sph,M.cream,0,-.112,.118,.046,.03,.042,head);
   mk(G.sph,M.nose,0,-.042,.172,.023,.016,.013,head);
