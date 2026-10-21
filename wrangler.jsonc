@@ -1,0 +1,9 @@
+{
+  // Leo's Arcade: a static site served by Cloudflare Workers (static assets only, no server code).
+  "name": "leoarcade",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public",
+    "not_found_handling": "404-page"
+  }
+}
