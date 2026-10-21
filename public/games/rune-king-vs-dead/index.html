@@ -93,6 +93,9 @@ body{background:var(--night);color:var(--paper);font-family:var(--body);font-siz
 .rbtn.laser{width:62px;height:62px;font-size:13px;background:#ff4f9a;color:var(--paper)}
 .rbtn.claw{width:66px;height:66px;font-size:14px;background:var(--paper);color:var(--ink)}
 .rbtn.cool{opacity:.5}
+.h-bl{flex-direction:column;align-items:center;gap:10px}
+.rbtn.tele{width:62px;height:62px;font-size:16px;background:var(--ecto);color:var(--ink)}
+.rbtn.tele small{font-size:9px}
 .shieldbar{color:#7fe3f0}.shieldbar i{background:#7fe3f0}
 .chapters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
 .chap{font-family:var(--body);text-align:left;border:3px solid #4a3d78;border-radius:18px;background:var(--night2);color:var(--paper);padding:10px 14px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -102,10 +105,10 @@ body{background:var(--night);color:var(--paper);font-family:var(--body);font-siz
 .chap:focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
 @media (max-width:620px){.chapters{grid-template-columns:1fr}}
 @media (max-width:720px){
-  .rbtn.laser{width:54px;height:54px;font-size:12px}.rbtn.claw{width:56px;height:56px;font-size:12px}
+  .rbtn.laser{width:54px;height:54px;font-size:12px}.rbtn.claw{width:56px;height:56px;font-size:12px}.rbtn.tele{width:56px;height:56px;font-size:14px}
   .room{display:none}.h-tc{top:88px;max-width:92%}
   .h-tr{flex-wrap:wrap;justify-content:flex-end;max-width:150px}.h-tr .icon{order:2}.h-tr .tracker{order:3}
-  .h-bc{bottom:144px;max-width:calc(100% - 32px)}
+  .h-bc{bottom:144px;max-width:calc(100% - 170px)}
   .stick{width:104px;height:104px}.rbtn.smash{width:86px;height:86px;font-size:18px}.rbtn.math{width:66px;height:66px;font-size:15px}
   .rune{width:44px;height:44px}
 }
@@ -212,7 +215,7 @@ body{background:var(--night);color:var(--paper);font-family:var(--body);font-siz
     </div>
     <div class="h-tr"><div class="pill" id="hLeft"></div><div class="pill tracker" id="hDragon"></div>
       <button class="icon" id="tPause" aria-label="Pause and settings"><svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></svg></button></div>
-    <div class="h-bl"><div class="stick" id="stick" role="application" aria-label="Walk: drag the stick, or use the arrow keys"><i></i></div></div>
+    <div class="h-bl"><button class="rbtn tele" id="bTele" aria-label="Teleport a little way to safety (T)">POOF<small>teleport</small></button><div class="stick" id="stick" role="application" aria-label="Walk: drag the stick, or use the arrow keys"><i></i></div></div>
     <div class="h-bc"><div class="runes" id="runes"></div></div>
     <div class="h-br"><button class="rbtn math" id="bMath">MATH<small id="mathSub">power up</small></button><button class="rbtn claw" id="bClaw" hidden aria-label="Claws (K)">CLAWS</button><div class="acol"><button class="rbtn laser" id="bLaser" hidden aria-label="Laser eyes (L)">LASER</button><button class="rbtn smash" id="bSmash">SMASH</button></div></div>
   </div>
@@ -250,6 +253,7 @@ body{background:var(--night);color:var(--paper);font-family:var(--body);font-siz
         <li>Each monster shows its health number. Every smash takes some away.</li>
         <li>Press <b>MATH</b> and answer a question. Your answer becomes your hammer power for 3 smashes!</li>
         <li><b>Chapter 2:</b> the upgraded Rune King has wings, six clawed hands and laser eyes. <b>LASER</b> zaps from far away and is the only thing that breaks the dragon’s shield. <b>CLAWS</b> hit every monster close to you. In Chapter 2 your hammer power is your answer times 10.</li>
+        <li>In a tight spot? Press <b>POOF</b> (or <kbd>T</kbd>) to teleport a little way to the safest spot nearby. It takes a moment to recharge.</li>
         <li>Bats are fast. Big slimes split in two. Spiders drop from the roof. Skeletons throw bones, so walk out of the way!</li>
         <li>Find all 5 triangle runes (green, blue, yellow, orange and red) and your <b>pet dragon</b> flies in. It breathes fire at the monsters by itself!</li>
         <li>There are 4 special runes too: Star, Water, Shrink and Giant.</li>
@@ -257,7 +261,7 @@ body{background:var(--night);color:var(--paper);font-family:var(--body);font-siz
         <li>Monsters drop runes. Your runes show up at the bottom of the screen. Tap one to wear it around your waist:</li>
       </ul>
       <div class="legend" id="legend"></div>
-      <p class="keysline">Keyboard: <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> walk · <kbd>Space</kbd> smash · <kbd>L</kbd> laser · <kbd>K</kbd> claws · <kbd>M</kbd> math · <kbd>1</kbd>–<kbd>9</kbd> runes · <kbd>P</kbd> pause</p>
+      <p class="keysline">Keyboard: <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> walk · <kbd>Space</kbd> smash · <kbd>L</kbd> laser · <kbd>K</kbd> claws · <kbd>M</kbd> math · <kbd>T</kbd> teleport · <kbd>1</kbd>–<kbd>9</kbd> runes · <kbd>P</kbd> pause</p>
     </details>
   </div>
 </div>
@@ -364,6 +368,7 @@ const sfx={
   shrink(){tone(900,.4,'triangle',.12,200);},
   laser(){tone(1500,.16,'sawtooth',.05,420);tone(2200,.1,'sine',.05,900);},
   claw(){noise(.12,.26,4200);tone(640,.1,'square',.04,180);},
+  tele(){tone(300,.22,'sine',.12,1700);tone(1700,.22,'triangle',.08,700,.16);noise(.14,.05,4200,.04);},
   charge(){tone(260,.9,'sine',.04,980);},
   zapEye(){tone(980,.32,'sawtooth',.06,140);noise(.2,.08,2600);},
   shieldBreak(){noise(.7,.3,1600);[784,659,523,392].forEach((f,i)=>tone(f,.16,'square',.06,null,i*.07));},
@@ -569,7 +574,7 @@ let state='title',level=0,roomIdx=0,room=ROOMS[0];
 const stock=RUNES.map(()=>0);
 let correct=0;
 let UP=false;/* Chapter 2: the upgraded Rune King */
-const P={lcd:0,ccd:0,laserT:0,clawT:0,laserA:null,laserB:null,big:1,x:280,z:60,dir:1,ry:FACE_CAM,face:FACE_CAM,idle:9,mvx:1,mvz:0,walk:0,hearts:5,maxHearts:5,inv:0,kb:0,charge:0,chargeHits:0,bossPower:1,active:-1,activeT:0};
+const P={lcd:0,ccd:0,tcd:0,laserT:0,clawT:0,laserA:null,laserB:null,big:1,x:280,z:60,dir:1,ry:FACE_CAM,face:FACE_CAM,idle:9,mvx:1,mvz:0,walk:0,hearts:5,maxHearts:5,inv:0,kb:0,charge:0,chargeHits:0,bossPower:1,active:-1,activeT:0};
 const HM={state:'idle',t:0,x:0,y:0,z:0,bx:0,by:0,bz:0,tx:0,ty:0,tz:0,target:null,all:[],miss:false};
 let ghosts=[],pickups=[],orbs=[],parts=[],texts=[],bolts=[],queue=[],B=null,banners=[];
 let spawnT=0,clearT=0,shake=0,flashT=0,nextFlash=7,T=0,firstDrop=true,mathTip=false,everRune=false;
@@ -804,6 +809,26 @@ function useRune(i){
 }
 
 /* ---------- update ---------- */
+/* POOF (Leo's idea): hop a little way to whichever nearby spot is furthest from monsters, bones and the boss */
+function teleport(){
+  if(state!=='play'||P.tcd>0)return;ac();
+  const threats=[];
+  for(const g of ghosts)if(g.state!=='die'&&g.alpha>.3)threats.push({x:g.x,z:g.z,r:g.r||30});
+  for(const o of orbs)if(!o.dead)threats.push({x:o.x,z:o.z,r:20});
+  if(B&&B.hp>0&&!B.dying)threats.push({x:B.x,z:B.z,r:150});
+  const safety=(x,z)=>{let m=threats.length?1e9:0;for(const t of threats)m=Math.min(m,Math.hypot(t.x-x,t.z-z)-t.r);
+    return m+Math.min(x-XMIN,XMAX-x,z-ZMIN,ZMAX-z)*.15+Math.random()*4;};
+  const hop=Math.min(P.big,1.5);let best=null,bs=-1e9;
+  for(let i=0;i<16;i++){const a=i/16*Math.PI*2;for(const d of[170,230]){
+    const x=clamp(P.x+Math.cos(a)*d*hop,XMIN,XMAX),z=clamp(P.z+Math.sin(a)*d*hop,ZMIN,ZMAX);
+    if(Math.hypot(x-P.x,z-P.z)<110*hop)continue;
+    const sc=safety(x,z);if(sc>bs){bs=sc;best={x,z};}}}
+  if(!best)return;
+  burst(P.x,FLOOR-110*P.big,'#8dffc4',22,true,P.z);
+  P.x=best.x;P.z=best.z;P.kb=0;P.inv=Math.max(P.inv,.6);P.tcd=2.5;P.idle=0;
+  burst(P.x,FLOOR-110*P.big,'#8dffc4',22,true,P.z);floatText(P.x,FLOOR-230*P.big,'POOF!','#8dffc4',36,P.z);
+  sfx.tele();
+}
 function update(dt){
   T+=dt;
   const slow=P.active===1?.3:1;
@@ -814,7 +839,7 @@ function update(dt){
   else{P.idle+=dt;P.walk+=(Math.round(P.walk/Math.PI)*Math.PI-P.walk)*Math.min(1,dt*12);}
   // he turns all the way round to face where he walks or throws, and looks back at you when he rests
   P.ry=angTo(P.ry,P.idle>2.4?FACE_CAM:P.face,Math.min(1,dt*10));
-  P.x+=P.kb*dt;P.kb*=Math.pow(.01,dt);P.x=clamp(P.x,XMIN,XMAX);P.z=clamp(P.z,ZMIN,ZMAX);P.inv-=dt;P.lcd-=dt;P.ccd-=dt;P.laserT-=dt;P.clawT-=dt;
+  P.x+=P.kb*dt;P.kb*=Math.pow(.01,dt);P.x=clamp(P.x,XMIN,XMAX);P.z=clamp(P.z,ZMIN,ZMAX);P.inv-=dt;P.lcd-=dt;P.ccd-=dt;P.tcd-=dt;P.laserT-=dt;P.clawT-=dt;
   if(P.active>=0){P.activeT-=dt;if(P.activeT<=0){P.active=-1;updateRunes();}}
   // hammer
   const h=handPos(),ix=h.x+26,iy=h.y+46+Math.sin(T*3)*5,iz=h.z+14;
@@ -1597,6 +1622,7 @@ function updateRunes(){RUNES.forEach((r,i)=>{const b=$('rune'+i);b.querySelector
 let lastSync='';
 function syncButtons(){
   if(P.active>=0)$('rune'+P.active).style.setProperty('--p',(P.activeT/RUNES[P.active].dur).toFixed(3));
+  $('bTele').classList.toggle('cool',P.tcd>0);
   if(UP){$('bLaser').classList.toggle('cool',P.lcd>0);$('bClaw').classList.toggle('cool',P.ccd>0);}
   const want=B?(P.bossPower<B.max?'pulse|add a zero':'|max power'):(P.chargeHits===0?'pulse|power up':'|'+P.chargeHits+' left');
   if(want!==lastSync){lastSync=want;const [p,t]=want.split('|');$('bMath').classList.toggle('pulse',!!p);$('mathSub').textContent=t;}
@@ -1615,6 +1641,7 @@ function syncButtons(){
 $('bSmash').addEventListener('pointerdown',e=>{e.preventDefault();smash();});
 $('bLaser').addEventListener('pointerdown',e=>{e.preventDefault();laser();});
 $('bClaw').addEventListener('pointerdown',e=>{e.preventDefault();claws();});
+$('bTele').addEventListener('pointerdown',e=>{e.preventDefault();teleport();});
 $('bMath').addEventListener('click',openQuestion);
 cv.addEventListener('pointerdown',e=>{e.preventDefault();smash();});
 $('tPause').addEventListener('click',pause);
@@ -1636,6 +1663,7 @@ addEventListener('keydown',e=>{
   else if(k===' '||k==='j'){if(!e.repeat)smash();e.preventDefault();}
   else if(k==='l'||k==='e'){if(!e.repeat)laser();e.preventDefault();}
   else if(k==='k'||k==='f'){if(!e.repeat)claws();e.preventDefault();}
+  else if(k==='t'){if(!e.repeat)teleport();e.preventDefault();}
   else if(k==='m'||k==='enter'||k==='q'){if(!e.repeat)openQuestion();e.preventDefault();}
   else if('123456789'.includes(k)&&k.length===1)useRune(+k-1);
   else if(k==='p'||k==='escape')pause();
