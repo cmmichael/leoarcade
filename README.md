@@ -17,6 +17,9 @@ public/
     rune-king-vs-dead/
       index.html              the game
       cover.jpg               16:9 card image (1600x900)
+    floofiness/
+      index.html              3D cat runner (open with ?autoplay for a demo, ?cover renders the cover scene)
+      cover.jpg
 wrangler.jsonc                Cloudflare Worker config (serves ./public)
 ```
 
