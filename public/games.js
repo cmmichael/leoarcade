@@ -20,5 +20,15 @@ window.LEO_GAMES = [
     tags: ["3D", "Math", "Monsters", "Two chapters"],
     added: "2026-10-20",
     accent: "#8dffc4"
+  },
+  {
+    slug: "rune-king-unstoppable-god",
+    title: "Rune King: Unstoppable God",
+    href: "/games/rune-king-unstoppable-god/",
+    cover: "/games/rune-king-unstoppable-god/cover.jpg",
+    blurb: "The Rune King is back, and Evil Madness has turned the good guys evil. Split your helpers into an army, use math power-ups and God mode, and set everyone free.",
+    tags: ["3D", "Math", "Monsters", "Army"],
+    added: "2026-10-31",
+    accent: "#f5c542"
   }
 ];

@@ -20,6 +20,9 @@ public/
     floofiness/
       index.html              3D cat runner (open with ?autoplay for a demo, ?cover renders the cover scene)
       cover.jpg
+    rune-king-unstoppable-god/
+      index.html              the game (title screen has the arcade link)
+      cover.jpg               16:9 card image (1600x900)
 wrangler.jsonc                Cloudflare Worker config (serves ./public)
 ```
 
