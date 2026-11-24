@@ -30,5 +30,15 @@ window.LEO_GAMES = [
     tags: ["3D", "Math", "Monsters", "Army"],
     added: "2026-10-31",
     accent: "#f5c542"
+  },
+  {
+    slug: "prism-paradox",
+    title: "Prism Paradox",
+    href: "/games/prism-paradox/",
+    cover: "/games/prism-paradox/cover.jpg",
+    blurb: "Ghosts are hiding in the pyramids! Solve math to power up, then blast them with bouncing prism shots, lightning, supernovas and dance moves. Just don't break the universe.",
+    tags: ["Math", "Ghosts", "Pyramids", "20 levels"],
+    added: "2026-11-23",
+    accent: "#f2c230"
   }
 ];

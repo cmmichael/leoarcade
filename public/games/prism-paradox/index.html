@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prism Paradox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* VOICE: playful, bold, a kid's own video game brought to life
+   IDEA: an arcade cabinet built around Leo's crayon drawing
+   PICTURE: the game itself, a night desert of pyramids with Prism Paradox drawn from Leo's design
+   COLOUR and TYPE: night blue field, crayon blue + crayon yellow from the drawing, sand gold; Lilita One + Nunito
+   LAYOUT: title, HUD, game, big controls, then Leo's drawing and the rules */
+:root{color-scheme:dark;--bg:#0c2440;--deep:#081a30;--ink:#f6f1e3;--mute:#b9c7d8;--blue:#1fa0d8;--yel:#f2c230;--sand:#d9a64a;--red:#e8412c;--card:#12345a}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Nunito,system-ui,sans-serif;overflow-x:clip}
+h1,h2,h3{font-family:"Lilita One",Nunito,sans-serif;font-weight:400;line-height:1.05;margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding:0 max(4vw,12px)}
+header{padding:22px 0 10px}
+.homelink{display:inline-block;color:var(--mute);font-weight:800;text-decoration:none;margin-bottom:8px;padding:6px 0}.homelink:hover{color:var(--yel)}
+header h1{font-size:clamp(34px,6vw,52px);color:var(--yel);text-shadow:3px 3px 0 #1a6f9c}
+header p{margin:4px 0 0;color:var(--mute)}
+.hud{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px 14px;background:var(--deep);border-radius:16px 16px 0 0;border:3px solid var(--blue);border-bottom:0;font-weight:800;font-size:15px}
+.hud .grp{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.hearts{color:var(--red);font-size:20px;letter-spacing:2px}
+.segs{display:flex;gap:3px}.segs i{width:18px;height:14px;border-radius:4px;background:#2a3f5c}.segs i.on{background:var(--yel);box-shadow:0 0 8px var(--yel)}
+.chip{padding:2px 10px;border-radius:99px;background:#2e7d4f}.chip.off{background:var(--red)}
+.meter{width:90px;height:12px;border-radius:99px;background:#2a3f5c;overflow:hidden}.meter b{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--yel),var(--red))}
+.frame{position:relative;aspect-ratio:960/600;border:3px solid var(--blue);border-top:0;border-bottom:0;background:#000;touch-action:none}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+.pad{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px;padding:12px;background:var(--deep);border:3px solid var(--blue);border-top:0;border-radius:0 0 16px 16px}
+.pad button{min-height:60px;border:0;border-radius:14px;font:800 16px/1.1 Nunito,sans-serif;color:#10203a;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.35);padding:8px 6px}
+.pad button small{display:block;font-weight:700;font-size:13px;opacity:.75}
+.pad button:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.35)}
+.pad button:disabled{filter:grayscale(.8);opacity:.6}
+button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#bFire{background:var(--yel)}#bHands{background:#d9d2ff}#bBoost{background:#7fe0a0}#bBelt{background:var(--blue);color:#fff}#bNova{background:#ff8a3d}#bDance{background:#ff9ad5}#bLight{background:#fff27a}
+.keys{color:var(--mute);font-size:14px;margin:10px 2px 0}
+.ov{position:absolute;inset:0;display:none;place-items:center;background:rgba(6,18,34,.88);padding:16px;overflow:auto;z-index:5}
+.ov.show{display:grid}
+.card{background:var(--card);border:3px solid var(--yel);border-radius:20px;padding:20px 22px;max-width:620px;width:100%;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.35)}
+.card h2{font-size:clamp(28px,4vw,40px);color:var(--yel)}
+.card p{margin:8px 0}
+.ages{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.ages button,.big{min-height:48px;padding:0 18px;border-radius:12px;border:3px solid var(--blue);background:transparent;color:var(--ink);font:800 16px Nunito,sans-serif;cursor:pointer}
+.ages button.sel{background:var(--blue);color:#fff}
+.big{background:var(--yel);border-color:var(--yel);color:#10203a;font-size:20px;min-height:56px;padding:0 30px;margin-top:6px}
+.q{font-family:"Lilita One",sans-serif;font-size:clamp(40px,7vw,64px);margin:6px 0;color:#fff}
+.dots{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:4px 0 8px}
+.dots span{display:flex;gap:4px;flex-wrap:wrap;max-width:140px;justify-content:center}
+.dots i{width:16px;height:16px;border-radius:50%;background:var(--yel)}.dots i.x{background:#2a3f5c;outline:2px solid var(--red)}
+.choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:8px}
+.choices button{min-height:64px;border-radius:14px;border:0;background:#fff;color:#10203a;font:400 30px "Lilita One",sans-serif;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.choices button.wrong{background:#5a6b80;color:#c6d0dc}.choices button.right{background:#7fe0a0}
+.fb{min-height:1.6em;font-weight:800;color:var(--yel)}
+.about{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:28px;padding:36px 0 56px;align-items:start}
+.about figure{margin:0}.about img{width:100%;border-radius:14px;border:3px solid var(--yel);display:block}
+.about figcaption{color:var(--mute);font-size:14px;margin-top:6px}
+.about h2{font-size:32px;color:var(--yel);margin-bottom:8px}
+.rules{list-style:none;padding:0;margin:0;display:grid;gap:12px}
+.rules li{background:var(--card);border-radius:14px;padding:12px 14px}
+.rules b{color:var(--yel)}
+@media(max-width:700px){.about{grid-template-columns:1fr}.pad{grid-template-columns:repeat(2,minmax(0,1fr))}#bLight{grid-column:1/-1}.choices{grid-template-columns:repeat(2,minmax(0,1fr))}.hud{font-size:13px}.meter{width:60px}}
+@media(max-width:600px){.ov{position:fixed;z-index:50}}
+@media(prefers-reduced-motion:reduce){.pad button:active{transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <a class="homelink" href="/">&larr; Leo&rsquo;s Arcade</a>
+  <h1>Prism Paradox</h1>
+  <p>A ghost-and-pyramid adventure starring Leo's own character.</p>
+</header>
+
+<div class="hud" aria-live="polite">
+  <span class="grp">Level <span id="hLvl">1</span></span>
+  <span class="grp hearts" id="hHearts" aria-label="hearts">&#9829;&#9829;&#9829;</span>
+  <span class="grp">Power <span class="segs" id="hPow"><i></i><i></i><i></i><i></i><i></i></span></span>
+  <span class="grp">Bolts <span class="segs" id="hBolt"><i></i><i></i><i></i></span></span>
+  <span class="grp">Belt <span class="chip" id="hBelt">ON</span></span>
+  <span class="grp">Unleashed <span class="meter"><b id="hUnl"></b></span></span>
+  <span class="grp">Ghosts left <span id="hLeft">0</span></span>
+</div>
+<div class="frame" id="frame">
+  <canvas id="cv" width="960" height="600" aria-label="Game area"></canvas>
+
+  <div class="ov show" id="ovTitle">
+    <div class="card">
+      <h2>Prism Paradox</h2>
+      <p>Ghosts are hiding inside the pyramids! Prism Paradox has enough power to break the pyramids, the world, even the whole universe, so he wears a <b>power safe belt</b>.</p>
+      <p>Solve math problems to power up, then beat every ghost.</p>
+      <p style="font-weight:800;margin-top:12px">Pick the math level</p>
+      <div class="ages" id="ages">
+        <button data-a="6">Age 6</button><button data-a="7" class="sel">Age 7</button><button data-a="8">Age 8</button>
+      </div>
+      <button class="big" id="bStart">Start at level 1</button>
+      <button class="big" id="bCont" style="display:none;background:transparent;color:var(--yel)"></button>
+    </div>
+  </div>
+
+  <div class="ov" id="ovMath">
+    <div class="card">
+      <h2 id="mTitle">Power boost!</h2>
+      <p id="mSub">Solve it to charge up.</p>
+      <div class="q" id="mQ"></div>
+      <div class="dots" id="mDots"></div>
+      <div class="choices" id="mChoices"></div>
+      <p class="fb" id="mFb"></p>
+      <button class="ages" id="mClose" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:12px;border:3px solid var(--blue);background:transparent;color:var(--ink);font:800 15px Nunito,sans-serif;cursor:pointer">Not now</button>
+    </div>
+  </div>
+
+  <div class="ov" id="ovMsg">
+    <div class="card">
+      <h2 id="gTitle"></h2>
+      <p id="gText"></p>
+      <button class="big" id="gBtn"></button>
+    </div>
+  </div>
+</div>
+<div class="pad">
+  <button id="bFire">Shot + spar<small>Space</small></button>
+  <button id="bHands">Ghost hands<small id="handsTxt">G</small></button>
+  <button id="bBoost">Power boost<small>M &middot; math</small></button>
+  <button id="bBelt">Take belt off<small>B</small></button>
+  <button id="bNova">Supernova<small id="novaTxt">S</small></button>
+  <button id="bDance">Dance<small id="danceTxt">D</small></button>
+  <button id="bLight">Lightning<small id="ltTxt">L</small></button>
+</div>
+<p class="keys">Walk with the arrow keys, or tap the desert to walk there. Space shoots and spars, G ghost hands, M math, B belt, S supernova, D dance, L lightning.</p>
+
+<section class="about">
+  <figure>
+    <img src="leo-drawing.jpg" alt="Leo's crayon drawing of Prism Paradox: a rainbow diamond head, yellow crown shards, long arms made of ovals, spiky orb hands and blue energy scribbles">
+    <figcaption>The original Prism Paradox, drawn by Leo.</figcaption>
+  </figure>
+  <div>
+    <h2>How to play</h2>
+    <ul class="rules">
+      <li><b>Beat the pyramid ghosts, 20 levels.</b> Ghosts hide inside pyramids and pop out to chase you. You can only hit them when they're outside. Every level, the ghosts get tougher and faster, and more pyramids appear. The game remembers the highest level you've reached.</li>
+      <li><b>Power boost (M).</b> Solve a math problem to get one power bar, up to 5. Each shot does as much damage as your power bars, so more math means stronger blasts. With zero power, your shots can't hurt ghosts. Getting hit costs a heart and a power bar. The math gets harder at levels 6, 11 and 16.</li>
+      <li><b>Prism shots</b> bounce off the walls one time, so you can bank them around corners.</li>
+      <li><b>Spar to reflect.</b> Every Space press also swings a sparring ring for a moment. Ghost blobs that touch it bounce back at the ghosts, and a ghost you spar gets knocked away without hurting you.</li>
+      <li><b>Supernova (S).</b> A giant blast that hits every ghost that's out. It needs at least one power bar and takes 15 seconds to recharge. With the belt off it's even stronger, but it cracks every pyramid and fills the Unleashed meter fast.</li>
+      <li><b>Dance (D).</b> Prism Paradox dances and the whole floor lights up. It starts as a rainbow, then keeps changing into new repeating color patterns. While he dances, every ghost and its attacks freeze, so it's the perfect time to shoot. Dance lasts 8 seconds and recharges in 20.</li>
+      <li><b>Lightning (L).</b> Lightning needs bolts, and you charge each bolt by solving a math problem (you can hold 3). With a bolt ready, press L and a target swings across the closest ghost. Press L again to strike. A hit on the red heart does 10 damage, which strikes out early ghosts instantly. Later ghosts need two or three heart hits. Anywhere else on the ghost does 4. Tip: dance first so the ghost holds still.</li>
+      <li><b>Ghost hands</b> give you a chance to spawn a ghost twin that looks just like you. It floats in ghost form, then switches back to its normal form and fights when an enemy appears.</li>
+      <li><b>Power safe belt (B).</b> With the belt on, Prism Paradox is just normal. With it off: every shot is bigger and does +1 damage, Supernova does +3, and every few seconds he might turn invincible for 4 seconds (no damage, even stronger shots). The catch: his power leaks out and fills the Unleashed meter, and his shots crack pyramids. Three cracks break a pyramid, so that ghost can never hide again. If the meter fills, the universe starts breaking and you must solve a problem to fix it. Then the belt snaps back on. Putting the belt back on drains the meter.</li>
+    </ul>
+  </div>
+</section>
+</div>
+
+<script>
+{
+const cv=document.getElementById('cv'),c=cv.getContext('2d'),W=960,H=600;
+const $=id=>document.getElementById(id);
+const rnd=(a,b)=>a+Math.random()*(b-a), ri=(a,b)=>Math.floor(rnd(a,b+1));
+const MAXL=20,MAXP=5,MAXB=3;
+function layout(n){
+  const k=Math.min(6,2+Math.floor((n-1)/4)),rows=k<=3?[k]:[Math.ceil(k/2),Math.floor(k/2)],ys=k<=3?[300]:[255,375],out=[];
+  rows.forEach((m,ri_)=>{for(let i=0;i<m;i++){const span=m===1?0:(ri_?560:700);out.push([480-span/2+(m===1?0:span*i/(m-1)),ys[ri_]])}});
+  return out;
+}
+const ghostHP=n=>3+Math.round((n-1)*1.3);
+const tier=()=>Math.min(5,(age-6)+Math.floor((level-1)/5));
+let saved=1;try{saved=Math.max(1,Math.min(MAXL,+localStorage.getItem('prismLevel')||1))}catch(e){}
+const SPD=230;
+let age=7,level=1,paused=true,S=null,t=0,last=0,mathMode=null,prob=null;
+const keys={};
+const stars=Array.from({length:70},()=>[rnd(0,W),rnd(0,140),rnd(.6,1.8)]);
+
+function startLevel(n){
+  level=n;
+  const L=layout(n),pw=L.length>=5?120:140;
+  const pyr=L.map(([x,y])=>({x,y,w:pw,h:pw*.75,cracks:[],broken:false}));
+  pyr.forEach(p=>{p.g={py:p,x:p.x,y:p.y-15,hp:ghostHP(n),max:ghostHP(n),state:'hide',t:rnd(1.5,4),sh:2,flash:0,sparCd:0}});
+  S={p:{x:480,y:530,hp:3,power:0,bolts:0,belt:true,inv:0,hurt:0,cd:0,spar:0,face:-Math.PI/2},
+     pyr,shots:[],goo:[],parts:[],toasts:[],once:{},twin:null,ghCd:0,novaCd:0,nova:null,dance:0,danceCd:0,lt:null,ltCd:0,bolt:null,unleash:0,invRoll:3,shake:0,tgt:null,crack:null};
+  hide('ovMsg');hide('ovTitle');paused=false;
+  if(n>saved){saved=n;try{localStorage.setItem('prismLevel',n)}catch(e){}}
+  toast('Level '+n+' of '+MAXL+': '+pyr.length+' pyramids. Get a power boost first!');
+}
+const ghosts=()=>S.pyr.map(p=>p.g);
+const isOut=g=>g.state==='out'||g.state==='back';
+
+function toast(s){S.toasts.push({s,t:3.2});if(S.toasts.length>2)S.toasts.shift()}
+function toastOnce(k,s){if(S.once[k]>t)return;S.once[k]=t+4;toast(s)}
+function burst(x,y,n,col,sp=160){for(let i=0;i<n;i++){const a=rnd(0,7),v=rnd(40,sp);S.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:rnd(.4,.9),col:col||`hsl(${ri(0,360)} 90% 60%)`})}}
+function nearestOut(x,y){let b=null,bd=1e9;for(const g of ghosts())if(isOut(g)){const d=Math.hypot(g.x-x,g.y-y);if(d<bd){bd=d;b=g}}return b}
+
+function shoot(x,y,owner){
+  const p=S.p,g=nearestOut(x,y),a=g?Math.atan2(g.y-y,g.x-x):p.face,big=owner==='p'&&!p.belt;
+  let dmg=p.power===0?0:p.power+(big?1:0)+(owner==='p'&&p.inv>0?1:0);
+  if(owner==='tw')dmg=p.power;
+  S.shots.push({x,y,vx:Math.cos(a)*520,vy:Math.sin(a)*520,b:0,r:big?12:6,dmg,owner,h:ri(0,360)});
+}
+function fire(){if(paused)return;S.p.spar=.35;if(S.p.cd>0)return;S.p.cd=.28;shoot(S.p.x,S.p.y-20,'p')}
+function hitG(g,dmg,x,y){if(g.state==='gone')return;g.hp-=dmg;g.flash=.15;burst(x,y,10);
+  if(g.hp<=0){g.state='gone';burst(g.x,g.y,40,'#f7fbff',240);toast('Ghost defeated!');checkWin()}}
+function lightning(){
+  if(paused)return;const p=S.p;
+  if(S.lt){strike();return}
+  if(S.ltCd>0)return;
+  if(p.bolts===0){openMath('bolt');return}
+  const g=nearestOut(p.x,p.y);
+  if(!g){toastOnce('lt0','No ghost is out to strike. Wait for one to come out!');return}
+  S.lt={g,ph:Math.PI/2,t:4};toast('Lightning! Press L again when the target is on the heart!');
+}
+function strike(){
+  const a=S.lt,g=a.g,p=S.p;S.lt=null;S.ltCd=3;if(!isOut(g))return;p.bolts--;
+  const tx=g.x+Math.sin(a.ph)*26,ty=g.y+4;S.bolt={x:tx,y:ty,t:.45};S.shake=.3;
+  if(Math.hypot(tx-(g.x-8),ty-(g.y+4))<9){
+    g.hp-=10;g.flash=.3;burst(g.x,g.y,60,'#fff27a',300);
+    if(g.hp<=0){g.state='gone';toast('DIRECT HIT TO THE HEART! Ghost struck out!');checkWin()}
+    else toast('Heart hit! 10 damage! This ghost needs more lightning.');
+  } else if(Math.abs(tx-g.x)<20){
+    g.hp-=4;g.flash=.25;burst(tx,ty,20,'#fff27a');
+    if(g.hp<=0){g.state='gone';burst(g.x,g.y,40,'#f7fbff',240);toast('Zap! Ghost defeated!');checkWin()}
+    else toast('Zap! You hit the ghost but missed the heart.');
+  } else {burst(tx,ty,16,'#fff27a');toast('Missed! Aim for the heart next time.')}
+}
+function dance(){
+  if(paused||S.danceCd>0)return;S.dance=8;S.danceCd=20;S.tgt=null;
+  toast('DANCE PARTY! The ghosts are frozen!');
+}
+function supernova(){
+  if(paused)return;const p=S.p;
+  if(S.novaCd>0)return;
+  if(p.power===0){toastOnce('nn','Not enough energy for a supernova! Solve a math problem first.');return}
+  S.novaCd=15;S.nova={t:0,x:p.x,y:p.y-20};S.shake=.5;S.goo=[];
+  const dmg=p.power*2+(p.belt?0:3);
+  burst(p.x,p.y-20,60,null,420);
+  toast(p.belt?'SUPERNOVA!':'SUPERNOVA with no belt! The pyramids are cracking!');
+  for(const g of ghosts())if(isOut(g))hitG(g,dmg,g.x,g.y);
+  if(!p.belt){S.unleash+=20;for(const py of S.pyr)crackPyr(py,py.x+rnd(-20,20),py.y-rnd(20,60));if(S.unleash>=100&&!paused)universeCrack()}
+}
+function ghostHands(){
+  if(paused||S.ghCd>0)return;S.ghCd=10;const p=S.p;
+  for(let i=0;i<18;i++)S.parts.push({x:p.x+rnd(-40,40),y:p.y+rnd(-50,10),vx:0,vy:-60,t:1,col:'rgba(220,215,255,.9)',hand:1});
+  if(Math.random()<.5){
+    S.twin={x:p.x-40,y:p.y,t:20,cd:.6,form:ghosts().some(isOut)?'normal':'ghost'};
+    toast(S.twin.form==='ghost'?'Ghost hands worked! A ghost twin appeared.':'Ghost twin appeared and is ready to fight!');
+  } else toast('Ghost hands... no twin this time. Try again soon!');
+}
+function toggleBelt(){
+  if(paused)return;const p=S.p;p.belt=!p.belt;
+  if(p.belt){p.inv=0;toast('Belt on. Prism Paradox is back to normal.')}
+  else{toast('Belt off! Shots are bigger and stronger, and you might go invincible.');toast('But power leaks out. Watch the Unleashed meter!')}
+}
+function hurt(){
+  const p=S.p;if(p.inv>0||p.hurt>0)return;
+  p.hp--;p.hurt=1.5;S.shake=.35;burst(p.x,p.y-20,16,'#e8412c');
+  if(p.power>0){p.power--;toast('Ouch! You lost a heart and a power bar.')}else toast('Ouch! You lost a heart.');
+  if(p.hp<=0){paused=true;showMsg('Out of hearts!','The ghosts got you this time. Try this level again!','Try again',()=>startLevel(level))}
+}
+function crackPyr(py,x,y){
+  py.cracks.push([x,y,x+rnd(-30,30),y+rnd(10,40),x+rnd(-40,40),y+rnd(30,60)]);
+  S.unleash+=10;S.shake=.2;burst(x,y,10,'#e6b45a');
+  if(py.cracks.length>=3&&!py.broken){py.broken=true;burst(py.x,py.y-50,40,'#e6b45a',260);
+    toast('The unleashed power broke a pyramid! Careful, the universe is next!');
+    if(py.g.state!=='gone'){py.g.state='out';py.g.t=99}}
+}
+function checkWin(){
+  if(ghosts().some(g=>g.state!=='gone'))return;paused=true;
+  if(level<MAXL){const up=Math.floor(level/5)>Math.floor((level-1)/5);
+    showMsg('Level '+level+' cleared!','Every ghost is gone! Next up: tougher, faster ghosts.'+(up?' The math gets harder too!':''),'Next level',()=>startLevel(level+1))}
+  else showMsg('You saved the universe!','Prism Paradox beat all '+MAXL+' levels of pyramid ghosts without breaking the world. Amazing math!','Play again',()=>{hide('ovMsg');showCont();show('ovTitle')});
+}
+function inPyr(py,x,y){if(py.broken)return y<=py.y&&y>=py.y-py.h*.45&&Math.abs(x-py.x)<=py.w/2;const top=py.y-py.h;if(y>py.y||y<top)return false;return Math.abs(x-py.x)<=py.w/2*(y-top)/py.h}
+
+function update(dt){
+  const p=S.p;
+  const mx=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0),my=(keys.ArrowDown?1:0)-(keys.ArrowUp?1:0);
+  if(S.dance>0){}
+  else if(mx||my){S.tgt=null;const l=Math.hypot(mx,my);p.x+=mx/l*SPD*dt;p.y+=my/l*SPD*dt;p.face=Math.atan2(my,mx)}
+  else if(S.tgt){const dx=S.tgt[0]-p.x,dy=S.tgt[1]-p.y,d=Math.hypot(dx,dy);if(d>4){const st=Math.min(d,SPD*dt);p.x+=dx/d*st;p.y+=dy/d*st;p.face=Math.atan2(dy,dx)}else S.tgt=null}
+  p.x=Math.max(40,Math.min(W-40,p.x));p.y=Math.max(170,Math.min(H-50,p.y));
+  p.cd-=dt;p.hurt-=dt;p.spar-=dt;S.ghCd-=dt;S.novaCd-=dt;S.shake-=dt;S.danceCd-=dt;S.ltCd-=dt;if(S.bolt){S.bolt.t-=dt;if(S.bolt.t<=0)S.bolt=null}
+  if(S.lt){S.lt.ph+=[2.2,2.8,3.4][age-6]*dt;S.lt.t-=dt;if(!isOut(S.lt.g))S.lt=null;else if(S.lt.t<=0){S.lt=null;S.ltCd=2;toast('The lightning fizzled. Try again!')}}
+  if(S.dance>0){S.dance-=dt;if(Math.random()<dt*8)S.parts.push({x:p.x+rnd(-50,50),y:p.y-30,vx:rnd(-20,20),vy:-70,t:1,col:`hsl(${ri(0,360)} 90% 65%)`,note:1});if(S.dance<=0)toast('Dance over. The ghosts can move again!')}if(S.nova){S.nova.t+=dt;if(S.nova.t>.8)S.nova=null}
+  if(!p.belt){
+    S.unleash+=3.5*dt;S.invRoll-=dt;p.inv-=dt;
+    if(S.invRoll<=0){S.invRoll=3;if(p.inv<=0&&Math.random()<.35){p.inv=4;toast('INVINCIBLE! Nothing can hurt you right now!')}}
+    if(S.unleash>=100){universeCrack();return}
+  } else {p.inv=0;S.unleash=Math.max(0,S.unleash-6*dt)}
+  // ghosts
+  for(const g of ghosts()){
+    if(g.state==='gone')continue;g.flash-=dt;const py=g.py;
+    if(S.dance>0)continue;
+    if(g.state==='hide'){g.t-=dt;if(g.t<=0){g.state='out';g.x=py.x;g.y=py.y-15;g.t=rnd(5,8)+level*.15;g.sh=rnd(1.2,2.2);
+      if(S.twin&&S.twin.form==='ghost'){S.twin.form='normal';toast('An enemy appeared! Your ghost twin switched to normal form!')}}}
+    else if(g.state==='out'){
+      const dx=p.x-g.x,dy=p.y-20-g.y,d=Math.hypot(dx,dy)||1,v=45+level*5;
+      g.x+=dx/d*v*dt;g.y+=dy/d*v*dt+Math.sin(t*3+g.py.x)*30*dt;
+      g.sh-=dt;if(g.sh<=0){g.sh=Math.max(.9,rnd(2,3.4)-level*.08);const gs=170+level*5;S.goo.push({x:g.x,y:g.y,vx:dx/d*gs,vy:dy/d*gs})}
+      g.t-=dt;if(g.t<=0&&!py.broken)g.state='back';
+    } else if(g.state==='back'){
+      const dx=py.x-g.x,dy=py.y-15-g.y,d=Math.hypot(dx,dy);
+      if(d<6){g.state='hide';g.t=Math.max(.8,rnd(1.5,3.5)-level*.05)}else{const st=Math.min(d,130*dt);g.x+=dx/d*st;g.y+=dy/d*st}
+    }
+    g.sparCd-=dt;
+    if(isOut(g)){const dx=g.x-p.x,dy=g.y-(p.y-20),d=Math.hypot(dx,dy)||1;
+      if(p.spar>0&&d<70){if(g.sparCd<=0){g.sparCd=.5;g.x+=dx/d*90;g.y+=dy/d*90;
+          if(p.power>0){hitG(g,p.power,g.x,g.y);toastOnce('sp','Spar hit! Knocked it back!')}else{g.flash=.15;toastOnce('sp0','Knocked it back! Get a power boost to hurt it.')}}}
+      else if(d<34)hurt()}
+  }
+  // twin
+  const tw=S.twin;
+  if(tw){
+    tw.t-=dt;if(tw.t<=0){S.twin=null;toast('Your ghost twin faded away.')}
+    else{
+      const any=ghosts().some(isOut);if(!any)tw.form='ghost';
+      tw.x+=(p.x-60-tw.x)*Math.min(1,4*dt);tw.y+=(p.y+6-tw.y)*Math.min(1,4*dt);
+      if(tw.form==='normal'){tw.cd-=dt;if(tw.cd<=0&&nearestOut(tw.x,tw.y)){tw.cd=1.2;shoot(tw.x,tw.y-20,'tw')}}
+    }
+  }
+  // shots
+  for(const s of S.shots){
+    s.x+=s.vx*dt;s.y+=s.vy*dt;
+    if(s.x<s.r||s.x>W-s.r){if(s.b<1){s.vx=-s.vx;s.b++;s.x=Math.max(s.r,Math.min(W-s.r,s.x));burst(s.x,s.y,5)}else s.dead=1}
+    if(s.y<s.r||s.y>H-s.r){if(s.b<1){s.vy=-s.vy;s.b++;s.y=Math.max(s.r,Math.min(H-s.r,s.y));burst(s.x,s.y,5)}else s.dead=1}
+    if(s.dead)continue;
+    for(const g of ghosts())if(isOut(g)&&Math.hypot(g.x-s.x,g.y-s.y)<26+s.r){
+      s.dead=1;
+      if(s.dmg<=0){burst(s.x,s.y,6,'#888');toastOnce('ne','No energy! Tap Power boost and solve a math problem.');break}
+      g.hp-=s.dmg;g.flash=.15;burst(s.x,s.y,10);
+      if(g.hp<=0){g.state='gone';burst(g.x,g.y,40,'#f7fbff',240);toast('Ghost defeated!');checkWin()}
+      break;
+    }
+    if(s.dead)continue;
+    for(const py of S.pyr)if(inPyr(py,s.x,s.y)){
+      s.dead=1;
+      if(s.owner==='p'&&!S.p.belt)crackPyr(py,s.x,s.y);
+      else{burst(s.x,s.y,6,'#e6b45a');if(py.g.state==='hide')toastOnce('hid','That ghost is hiding in the pyramid. Wait for it to come out!')}
+      break;
+    }
+  }
+  S.shots=S.shots.filter(s=>!s.dead);
+  const frz=S.dance>0;
+  for(const o of S.goo){if(!frz){o.x+=o.vx*dt;o.y+=o.vy*dt}
+    if(p.spar>0&&Math.hypot(o.x-p.x,o.y-(p.y-20))<80){o.dead=1;const g=nearestOut(o.x,o.y),a=g?Math.atan2(g.y-o.y,g.x-o.x):Math.atan2(-o.vy,-o.vx);
+      S.shots.push({x:o.x,y:o.y,vx:Math.cos(a)*480,vy:Math.sin(a)*480,b:0,r:8,dmg:p.power,owner:'p',h:150,refl:1});burst(o.x,o.y,10,'#9ef0d8');toastOnce('rf','Reflected!');continue}if(!frz&&Math.hypot(o.x-p.x,o.y-(p.y-20))<22){o.dead=1;hurt()}if(o.x<0||o.x>W||o.y<0||o.y>H)o.dead=1}
+  S.goo=S.goo.filter(o=>!o.dead);
+  for(const q of S.parts){q.x+=q.vx*dt;q.y+=q.vy*dt;q.t-=dt}
+  S.parts=S.parts.filter(q=>q.t>0);
+  for(const m of S.toasts)m.t-=dt;S.toasts=S.toasts.filter(m=>m.t>0);
+}
+
+function universeCrack(){
+  paused=true;S.unleash=100;S.shake=.6;
+  const L=[];for(let k=0;k<7;k++){let x=W/2,y=H/2,a=k*0.9+rnd(0,.5);const pts=[[x,y]];for(let i=0;i<6;i++){a+=rnd(-.5,.5);x+=Math.cos(a)*rnd(40,90);y+=Math.sin(a)*rnd(40,90);pts.push([x,y])}L.push(pts)}
+  S.crack=L;draw();openMath('fix');
+}
+
+/* ---------- math ---------- */
+function genProblem(){
+  let a,b,op,ans,txt=null;const T=tier();
+  if(T===0){if(Math.random()<.6){a=ri(1,8);b=ri(1,10-a);op='+';ans=a+b}else{a=ri(3,10);b=ri(1,a-1);op='−';ans=a-b}}
+  else if(T===1){if(Math.random()<.55){a=ri(3,12);b=ri(2,20-a);op='+';ans=a+b}else{a=ri(8,20);b=ri(1,a-2);op='−';ans=a-b}}
+  else if(T===2){const k=Math.random();
+    if(k<.35){a=ri(1,8)*10;b=ri(1,10-a/10)*10;op='+';ans=a+b}else if(k<.7){a=ri(21,89);b=ri(1,9);op='+';ans=a+b}else{a=ri(12,30);b=ri(3,a-2);op='−';ans=a-b}}
+  else if(T===3){const k=Math.random();
+    if(k<.35){a=ri(11,60);b=ri(1,4)*10+ri(0,9-a%10);op='+';ans=a+b}else if(k<.65){a=ri(25,60);b=ri(2,9);op='−';ans=a-b}else{a=[2,5,10][ri(0,2)];b=ri(1,10);op='×';ans=a*b}}
+  else if(T===4){const k=Math.random();
+    if(k<.35){a=ri(15,59);b=ri(15,99-a);op='+';ans=a+b}else if(k<.65){a=ri(40,99);b=ri(11,a-5);op='−';ans=a-b}else{a=[2,3,4,5,10][ri(0,4)];b=ri(1,10);op='×';ans=a*b}}
+  else{const k=Math.random();
+    if(k<.25){a=ri(3,12);b=ri(3,12);const c=ri(2,9);op='+';ans=a+b+c;txt=`${a} + ${b} + ${c} = ?`}
+    else if(k<.5){a=ri(2,10);b=ri(2,10);op='×';ans=a*b}
+    else if(k<.75){a=ri(50,100);b=ri(15,a-5);op='−';ans=a-b}
+    else{const x=ri(4,15),y=ri(4,15);ans=x;txt=`? + ${y} = ${x+y}`;a=x;b=y;op='+'}}
+  const set=new Set([ans]),ds=T>=2?[1,-1,10,-10,2,-2,5]:[1,-1,2,-2,3,-3];
+  while(set.size<4){const v=ans+ds[ri(0,ds.length-1)];if(v>=0)set.add(v)}
+  const ch=[...set].sort(()=>Math.random()-.5);
+  return{a,b,op,ans,ch,txt:txt||`${a} ${op} ${b} = ?`,dots:T===0};
+}
+function openMath(mode){
+  mathMode=mode;prob=genProblem();
+  $('mTitle').textContent=mode==='fix'?'The universe is cracking!':mode==='bolt'?'Charge your lightning!':'Power boost!';
+  $('mSub').textContent=mode==='fix'?'Solve it to fix the universe. Your belt will snap back on.':mode==='bolt'?'Solve it to charge one lightning bolt.':'Solve it to charge up one power bar.';
+  $('mClose').style.display=mode==='fix'?'none':'inline-flex';
+  $('mQ').textContent=prob.txt;
+  let dots='';
+  if(prob.dots){const dd=n=>'<i></i>'.repeat(n);
+    dots=prob.op==='+'?`<span>${dd(prob.a)}</span><span>${dd(prob.b)}</span>`:`<span>${dd(prob.a-prob.b)}${'<i class="x"></i>'.repeat(prob.b)}</span>`}
+  $('mDots').innerHTML=dots;
+  $('mChoices').innerHTML=prob.ch.map(v=>`<button data-v="${v}">${v}</button>`).join('');
+  $('mFb').textContent='';
+  paused=true;show('ovMath');
+  const first=$('mChoices').querySelector('button');if(first)first.focus({preventScroll:true});
+}
+$('mChoices').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b||b.disabled)return;
+  if(+b.dataset.v===prob.ans){
+    b.classList.add('right');$('mFb').textContent=['Yes! Great job!','Correct!','You got it!'][ri(0,2)];
+    [...$('mChoices').children].forEach(x=>x.disabled=true);
+    setTimeout(()=>{
+      hide('ovMath');
+      if(mathMode==='fix'){S.unleash=0;S.p.belt=true;S.p.inv=0;S.crack=null;toast('Universe fixed! The power safe belt is back on.')}
+      else if(mathMode==='bolt'){S.p.bolts=Math.min(MAXB,S.p.bolts+1);burst(S.p.x,S.p.y-20,30,'#fff27a',200);toast('Lightning charged! Bolts: '+S.p.bolts+'. Press L to aim.')}
+      else{S.p.power=Math.min(MAXP,S.p.power+1);burst(S.p.x,S.p.y-20,30,'#f2c230',200);toast('Power boost! Power is now '+S.p.power+' of '+MAXP+'.')}
+      paused=false;last=performance.now();
+    },700);
+  } else {b.classList.add('wrong');b.disabled=true;$('mFb').textContent='Not quite. Try another answer!'}
+});
+$('mClose').addEventListener('click',()=>{hide('ovMath');paused=false;last=performance.now()});
+
+/* ---------- drawing ---------- */
+function oval(x,y,rx,ry,fill){c.beginPath();c.ellipse(x,y,rx,ry,0,0,7);c.fillStyle=fill;c.fill();c.stroke();
+  c.beginPath();c.moveTo(x-rx*.5,y-1);c.lineTo(x+rx*.4,y-2);c.moveTo(x-rx*.4,y+2);c.lineTo(x+rx*.5,y+1);c.stroke()}
+function orb(x,y,blue){c.beginPath();for(let i=0;i<14;i++){const a=i/14*6.283;c.moveTo(x+Math.cos(a)*8,y+Math.sin(a)*8);c.lineTo(x+Math.cos(a)*13,y+Math.sin(a)*13)}c.stroke();
+  c.beginPath();c.arc(x,y,8.5,0,7);c.fillStyle=blue?'#1fa0d8':'#f3ecc8';c.fill();c.stroke();c.beginPath();c.arc(x,y,3,0,7);c.stroke()}
+function drawPrism(x,y,s,o){
+  c.save();c.translate(x,y);c.scale(s,s);c.globalAlpha=o.alpha??1;c.lineJoin='round';
+  if(o.inv){for(let i=0;i<6;i++){c.beginPath();c.arc(0,-14,60,i*1.047+t*3,i*1.047+t*3+1);c.strokeStyle=`hsl(${i*60+t*300} 95% 60%)`;c.lineWidth=6;c.stroke()}}
+  c.strokeStyle='#1fa0d8';c.lineWidth=2.5;
+  for(let k=0;k<6;k++){const a=k*1.047+t*.6,r=50;c.beginPath();for(let i=0;i<5;i++){const rr=r+(i%2?6:-6),aa=a+i*.08;i?c.lineTo(Math.cos(aa)*rr,-14+Math.sin(aa)*rr):c.moveTo(Math.cos(aa)*rr,-14+Math.sin(aa)*rr)}c.stroke()}
+  c.strokeStyle='#5d5d5d';c.lineWidth=1.5;c.fillStyle='#f3ecc8';
+  for(const sd of[-1,1]){c.beginPath();c.moveTo(sd*4,14);c.lineTo(sd*30,46);c.quadraticCurveTo(sd*22,54,sd*12,49);c.lineTo(sd*-4,16);c.closePath();c.fill();c.stroke()}
+  for(const sd of[-1,1]){for(let i=1;i<=4;i++)oval(sd*(8+i*12),-4-i*2,7,5.5,'#f3ecc8');orb(sd*(8+5*12),-14,true);
+    for(let i=1;i<=3;i++)oval(sd*(8+i*12),10+i*4,7,5.5,'#f3ecc8');orb(sd*(8+4*12),28,false)}
+  oval(0,-2,11,8,'#ecebe5');oval(0,9,10,7,'#ecebe5');oval(0,18,7,6,'#ecebe5');
+  if(o.belt){c.fillStyle='#c8902a';c.fillRect(-13,3,26,7);c.strokeRect(-13,3,26,7);c.fillStyle='#ffe27a';c.fillRect(-4,2,8,9);c.strokeRect(-4,2,8,9)}
+  c.fillStyle='#f2c230';c.strokeStyle='#b88a00';
+  for(const sh of[[[-4,-34],[0,-54],[5,-34]],[[-10,-31],[-24,-46],[-6,-36]],[[10,-31],[24,-46],[6,-36]],[[-13,-24],[-32,-30],[-12,-19]],[[13,-24],[32,-30],[12,-19]]]){
+    c.beginPath();sh.forEach(([a,b],i)=>i?c.lineTo(a,b):c.moveTo(a,b));c.closePath();c.fill();c.stroke()}
+  c.beginPath();c.arc(0,-22,13,0,7);c.fill();c.stroke();
+  [[11,'#e8412c'],[8,'#f08a24'],[5.5,'#2e9b4a'],[3,'#7a4bb0']].forEach(([r,col])=>{c.beginPath();c.moveTo(0,-22-r);c.lineTo(r,-22);c.lineTo(0,-22+r);c.lineTo(-r,-22);c.closePath();c.fillStyle=col;c.fill()});
+  c.strokeStyle='#222';c.lineWidth=1.2;c.beginPath();c.moveTo(-2,-24);c.lineTo(2,-20);c.moveTo(2,-24);c.lineTo(-2,-20);c.stroke();
+  c.restore();
+}
+function drawGhost(g){
+  const fz=S.dance>0;c.save();c.translate(g.x,g.y+(fz?0:Math.sin(t*4+g.py.x)*3));
+  c.beginPath();c.moveTo(-19,10);c.lineTo(-19,-6);c.arc(0,-6,19,Math.PI,0);c.lineTo(19,10);
+  for(let i=0;i<=4;i++)c.lineTo(19-i*9.5,10+(i%2?6:0)+Math.sin(t*6+i)*2);
+  c.closePath();c.fillStyle=g.flash>0?'#ffb3c1':fz?'#bfe9ff':'rgba(247,251,255,.95)';c.fill();c.strokeStyle='#8aa3c8';c.lineWidth=2;c.stroke();
+  c.fillStyle='#14213a';c.beginPath();c.ellipse(-7,-8,3.5,5,0,0,7);c.ellipse(7,-8,3.5,5,0,0,7);c.fill();
+  c.beginPath();c.ellipse(0,3,3,4,0,0,7);c.fill();
+  c.fillStyle='#e8412c';c.beginPath();c.moveTo(-8,8);c.bezierCurveTo(-14,3,-12,-1,-8,2);c.bezierCurveTo(-4,-1,-2,3,-8,8);c.fill();
+  c.fillStyle='#3a4a60';c.fillRect(-20,-38,40,6);c.fillStyle='#e8412c';c.fillRect(-20,-38,40*Math.max(0,g.hp)/g.max,6);
+  c.restore();
+}
+function drawPyr(py){
+  const {x,y,w,h}=py,top=y-h;c.save();c.lineWidth=2;c.strokeStyle='#7a5520';
+  if(py.broken){c.beginPath();c.moveTo(x-w/2,y);c.lineTo(x-w*.3,y-h*.45);c.lineTo(x-w*.1,y-h*.3);c.lineTo(x+w*.05,y-h*.5);c.lineTo(x+w*.25,y-h*.35);c.lineTo(x+w/2,y);c.closePath();c.fillStyle='#c8913a';c.fill();c.stroke();c.restore();return}
+  c.beginPath();c.moveTo(x,top);c.lineTo(x-w/2,y);c.lineTo(x,y);c.closePath();c.fillStyle='#e6b45a';c.fill();
+  c.beginPath();c.moveTo(x,top);c.lineTo(x+w/2,y);c.lineTo(x,y);c.closePath();c.fillStyle='#b98432';c.fill();
+  c.beginPath();c.moveTo(x,top);c.lineTo(x-w/2,y);c.lineTo(x+w/2,y);c.closePath();c.stroke();
+  c.strokeStyle='rgba(122,85,32,.5)';c.lineWidth=1;for(let i=1;i<5;i++){const yy=top+h*i/5,hw=w/2*i/5;c.beginPath();c.moveTo(x-hw,yy);c.lineTo(x+hw,yy);c.stroke()}
+  c.fillStyle='#2a1a08';c.beginPath();c.moveTo(x-12,y);c.lineTo(x-12,y-22);c.arc(x,y-22,12,Math.PI,0);c.lineTo(x+12,y);c.closePath();c.fill();
+  if(py.g.state==='hide'&&Math.sin(t*2+x)>-.7){c.fillStyle='#f7fbff';c.beginPath();c.arc(x-5,y-20,2.5,0,7);c.arc(x+5,y-20,2.5,0,7);c.fill()}
+  if(py.g.state==='gone'){c.fillStyle='#ffe27a';c.beginPath();for(let i=0;i<10;i++){const a=i*.628+t,r=i%2?4:10;c.lineTo(x+Math.cos(a)*r,top-6+Math.sin(a)*r)}c.fill()}
+  c.strokeStyle='#3a2208';c.lineWidth=2.5;for(const k of py.cracks){c.beginPath();c.moveTo(k[0],k[1]);c.lineTo(k[2],k[3]);c.lineTo(k[4],k[5]);c.stroke()}
+  c.restore();
+}
+const PAL=['#e8412c','#f08a24','#f2c230','#2e9b4a','#1fa0d8','#7a4bb0'];
+function danceWrap(x,y,fn){
+  if(!(S.dance>0))return fn();
+  c.save();c.translate(x,y-Math.abs(Math.sin(t*9))*14);c.rotate(Math.sin(t*9)*.28);c.translate(-x,-y);fn();c.restore();
+}
+function drawFloor(){
+  const el=8-S.dance,ph=Math.floor(el/2)%4,fade=Math.min(1,el*3,S.dance*3),T=44,p=S.p;
+  c.save();c.globalAlpha=.6*fade;
+  for(let y=190,row=0;y<H;y+=T,row++)for(let x=0,col=0;x<W;x+=T,col++){
+    let f;
+    if(ph===0)f=`hsl(${((col+row)*30-t*240)%360+360} 95% 60%)`;
+    else if(ph===1)f=PAL[((col+row)%2+Math.floor(t*4)*2)%6];
+    else if(ph===2){const k=Math.floor(Math.hypot(x+T/2-p.x,y+T/2-p.y)/T-t*6);f=PAL[((k%6)+6)%6]}
+    else f=PAL[(col+Math.floor(t*5))%6];
+    c.fillStyle=f;c.fillRect(x+2,y+2,T-4,T-4);
+  }
+  c.restore();
+}
+function draw(){
+  c.save();
+  if(S&&S.shake>0)c.translate(rnd(-6,6),rnd(-6,6));
+  let gr=c.createLinearGradient(0,0,0,170);gr.addColorStop(0,'#081a30');gr.addColorStop(1,'#16507a');c.fillStyle=gr;c.fillRect(-10,-10,W+20,190);
+  c.fillStyle='#fff';for(const[x,y,r]of stars){c.globalAlpha=.5+.5*Math.sin(t*2+x);c.fillRect(x,y,r,r)}c.globalAlpha=1;
+  c.fillStyle='#f6f1e3';c.beginPath();c.arc(860,60,26,0,7);c.fill();c.fillStyle='#0d2c4c';c.beginPath();c.arc(872,52,22,0,7);c.fill();
+  c.fillStyle='#c8913a';c.beginPath();c.moveTo(-10,170);c.quadraticCurveTo(240,110,520,165);c.quadraticCurveTo(760,120,W+10,160);c.lineTo(W+10,H+10);c.lineTo(-10,H+10);c.fill();
+  gr=c.createLinearGradient(0,170,0,H);gr.addColorStop(0,'#d9a64a');gr.addColorStop(1,'#e8bf6c');c.fillStyle=gr;c.beginPath();c.moveTo(-10,190);c.quadraticCurveTo(300,160,620,195);c.quadraticCurveTo(820,175,W+10,190);c.lineTo(W+10,H+10);c.lineTo(-10,H+10);c.fill();
+  if(!S){drawPrism(480,400,2.6,{belt:true});c.restore();return}
+  if(S.dance>0)drawFloor();
+  S.pyr.forEach(drawPyr);
+  if(S.tgt){c.strokeStyle='rgba(255,255,255,.5)';c.lineWidth=2;c.beginPath();c.arc(S.tgt[0],S.tgt[1],10+Math.sin(t*8)*2,0,7);c.stroke()}
+  if(S.p.spar>0){c.strokeStyle=`rgba(242,194,48,${S.p.spar*2.4})`;c.lineWidth=5;c.beginPath();c.arc(S.p.x,S.p.y-20,80-S.p.spar*40,0,7);c.stroke()}
+  const ents=[];ghosts().forEach(g=>{if(isOut(g))ents.push([g.y,()=>drawGhost(g)])});
+  const p=S.p;
+  ents.push([p.y,()=>{c.fillStyle='rgba(0,0,0,.18)';c.beginPath();c.ellipse(p.x,p.y+48,34,8,0,0,7);c.fill();
+    danceWrap(p.x,p.y-20,()=>drawPrism(p.x,p.y-20,1,{belt:p.belt,inv:p.inv>0,alpha:p.hurt>0&&Math.sin(t*30)>0?.4:1}))}]);
+  if(S.twin){const tw=S.twin;ents.push([tw.y,()=>{danceWrap(tw.x,tw.y-20,()=>drawPrism(tw.x,tw.y-20,.9,{belt:p.belt,alpha:tw.form==='ghost'?.35:.9}));
+    if(tw.form==='ghost'){c.fillStyle='rgba(220,230,255,.18)';c.beginPath();c.arc(tw.x,tw.y-30,46,0,7);c.fill()}}])}
+  ents.sort((a,b)=>a[0]-b[0]).forEach(e=>e[1]());
+  for(const s of S.shots){c.save();c.translate(s.x,s.y);c.rotate(Math.atan2(s.vy,s.vx));c.fillStyle=s.owner==='tw'?'#dfe8ff':`hsl(${(s.h+t*400)%360} 95% 60%)`;
+    c.beginPath();c.moveTo(s.r*1.6,0);c.lineTo(0,s.r);c.lineTo(-s.r*1.6,0);c.lineTo(0,-s.r);c.closePath();c.fill();c.strokeStyle='#fff';c.lineWidth=1.5;c.stroke();c.restore()}
+  if(S.lt){const g=S.lt.g,x=g.x+Math.sin(S.lt.ph)*26,y=g.y+4;c.strokeStyle='#fff27a';c.lineWidth=3;
+    c.beginPath();c.arc(x,y,9,0,7);c.moveTo(x-15,y);c.lineTo(x-5,y);c.moveTo(x+5,y);c.lineTo(x+15,y);c.moveTo(x,y-15);c.lineTo(x,y-5);c.moveTo(x,y+5);c.lineTo(x,y+15);c.stroke();
+    c.strokeStyle='rgba(255,242,122,.35)';c.beginPath();c.moveTo(g.x-26,y);c.lineTo(g.x+26,y);c.stroke()}
+  if(S.bolt){const b=S.bolt;c.save();c.globalAlpha=Math.min(1,b.t*3);c.strokeStyle='#fffbd0';c.lineWidth=6;c.shadowColor='#fff27a';c.shadowBlur=20;
+    c.beginPath();let x=b.x+rnd(-30,30),y=0;c.moveTo(x,y);while(y<b.y-20){y+=rnd(30,55);x+=rnd(-28,28);c.lineTo(x,Math.min(y,b.y))}c.lineTo(b.x,b.y);c.stroke();
+    c.fillStyle='rgba(255,250,210,.25)';c.fillRect(0,0,W,H);c.restore()}
+  c.fillStyle='#9ef0d8';for(const o of S.goo){c.beginPath();c.arc(o.x,o.y,7,0,7);c.fill()}
+  for(const q of S.parts){c.globalAlpha=Math.min(1,q.t*2);c.fillStyle=q.col;if(q.note){c.font='800 22px Nunito,sans-serif';c.fillText('\u266A',q.x,q.y)}else if(q.hand){c.beginPath();c.ellipse(q.x,q.y,5,8,0,0,7);c.fill()}else c.fillRect(q.x-2,q.y-2,4,4)}c.globalAlpha=1;
+  if(S.nova){const n=S.nova,a=1-n.t/.8;c.fillStyle=`rgba(255,240,200,${a*.35})`;c.fillRect(0,0,W,H);for(let i=0;i<3;i++){c.strokeStyle=`hsla(${30+i*20} 100% 65% / ${a})`;c.lineWidth=14-i*4;c.beginPath();c.arc(n.x,n.y,Math.max(1,n.t*1100-i*40),0,7);c.stroke()}}
+  if(S.crack){c.strokeStyle='#fff';c.lineWidth=4;c.shadowColor='#7fd3ff';c.shadowBlur=14;for(const L of S.crack){c.beginPath();L.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.stroke()}c.shadowBlur=0}
+  c.font='800 20px Nunito, sans-serif';c.textAlign='center';
+  S.toasts.forEach((m,i)=>{const y=34+i*40,w=Math.min(W-40,c.measureText(m.s).width+34);c.globalAlpha=Math.min(1,m.t*2);
+    c.fillStyle='rgba(8,26,48,.85)';c.beginPath();c.roundRect?c.roundRect(W/2-w/2,y-22,w,34,17):c.rect(W/2-w/2,y-22,w,34);c.fill();c.fillStyle='#f6f1e3';c.fillText(m.s,W/2,y+2)});
+  c.globalAlpha=1;c.restore();
+}
+
+/* ---------- HUD + loop ---------- */
+const segs=[...$('hPow').children],bsegs=[...$('hBolt').children];
+function hud(){
+  if(!S)return;const p=S.p;
+  $('hLvl').textContent=level+' / '+MAXL;$('hHearts').innerHTML='&#9829;'.repeat(Math.max(0,p.hp))+'<span style="color:#3a4a60">'+'&#9829;'.repeat(3-Math.max(0,p.hp))+'</span>';
+  segs.forEach((s,i)=>s.classList.toggle('on',i<p.power));bsegs.forEach((s,i)=>s.classList.toggle('on',i<p.bolts));
+  const hb=$('hBelt');hb.textContent=p.belt?'ON':'OFF';hb.classList.toggle('off',!p.belt);
+  $('hUnl').style.width=Math.min(100,S.unleash)+'%';
+  $('hLeft').textContent=ghosts().filter(g=>g.state!=='gone').length;
+  $('handsTxt').textContent=S.ghCd>0?'ready in '+Math.ceil(S.ghCd)+'s':'G';$('bHands').disabled=S.ghCd>0;
+  $('bBoost').disabled=p.power>=MAXP;
+  $('novaTxt').textContent=S.novaCd>0?'ready in '+Math.ceil(S.novaCd)+'s':'S';$('bNova').disabled=S.novaCd>0;$('danceTxt').textContent=S.dance>0?'dancing!':S.danceCd>0?'ready in '+Math.ceil(S.danceCd)+'s':'D';$('bDance').disabled=S.danceCd>0;$('ltTxt').textContent=S.lt?'press again!':S.ltCd>0?'ready in '+Math.ceil(S.ltCd)+'s':p.bolts?'L · '+p.bolts+' bolt'+(p.bolts>1?'s':''):'L · math to charge';$('bLight').disabled=!S.lt&&S.ltCd>0;
+  $('bBelt').firstChild.textContent=p.belt?'Take belt off':'Put belt on';
+}
+function loop(now){
+  const dt=Math.min(.05,(now-last)/1000||0);last=now;t+=dt;
+  if(!paused&&S)update(dt);
+  draw();hud();requestAnimationFrame(loop);
+}
+function show(id){$(id).classList.add('show')}function hide(id){$(id).classList.remove('show')}
+function showMsg(h,p,b,fn){$('gTitle').textContent=h;$('gText').textContent=p;$('gBtn').textContent=b;$('gBtn').onclick=fn;show('ovMsg')}
+
+$('ages').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;age=+b.dataset.a;[...$('ages').children].forEach(x=>x.classList.toggle('sel',x===b))});
+$('bStart').addEventListener('click',()=>startLevel(1));
+$('bCont').addEventListener('click',()=>startLevel(saved));
+function showCont(){const b=$('bCont');if(saved>1){b.style.display='inline-block';b.textContent='Continue at level '+saved}}
+showCont();
+$('bFire').addEventListener('click',fire);
+$('bHands').addEventListener('click',ghostHands);
+$('bBoost').addEventListener('click',()=>{if(!paused&&S.p.power<MAXP)openMath('boost')});
+$('bBelt').addEventListener('click',toggleBelt);
+$('bNova').addEventListener('click',supernova);
+$('bDance').addEventListener('click',dance);
+$('bLight').addEventListener('click',lightning);
+cv.addEventListener('pointerdown',e=>{if(paused||!S)return;const r=cv.getBoundingClientRect();S.tgt=[(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*H/r.height]});
+addEventListener('keydown',e=>{
+  const k=e.key.length===1?e.key.toLowerCase():e.key;
+  if(e.target.closest&&e.target.closest('.ov'))return;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(k)&&S)e.preventDefault();
+  if(e.repeat&&k!==' '){keys[k]=true;return}
+  keys[k]=true;
+  if(k===' ')fire();else if(k==='g')ghostHands();else if(k==='b')toggleBelt();else if(k==='s')supernova();else if(k==='d')dance();else if(k==='l')lightning();else if(k==='m'&&!paused&&S.p.power<MAXP)openMath('boost');
+});
+addEventListener('keyup',e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false});
+addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
+requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

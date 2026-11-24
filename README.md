@@ -23,6 +23,10 @@ public/
     rune-king-unstoppable-god/
       index.html              the game (title screen has the arcade link)
       cover.jpg               16:9 card image (1600x900)
+    prism-paradox/
+      index.html              2D ghost-and-pyramid math game (canvas, no libraries)
+      cover.jpg               16:9 card image (1600x900)
+      leo-drawing.jpg         Leo's original drawing of the character, shown on the game page
 wrangler.jsonc                Cloudflare Worker config (serves ./public)
 ```
 
