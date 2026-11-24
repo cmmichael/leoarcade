@@ -36,8 +36,8 @@ window.LEO_GAMES = [
     title: "Prism Paradox",
     href: "/games/prism-paradox/",
     cover: "/games/prism-paradox/cover.jpg",
-    blurb: "Ghosts are hiding in the pyramids! Solve math to power up, then blast them with bouncing prism shots, lightning, supernovas and dance moves. Just don't break the universe.",
-    tags: ["Math", "Ghosts", "Pyramids", "20 levels"],
+    blurb: "Ghosts are hiding in the pyramids! Solve math to power up, send your saws flying, beat 5 Pharaoh bosses to win tornados, then combine them into the Ultimate Tornado.",
+    tags: ["Math", "Ghosts", "Bosses", "30 levels"],
     added: "2026-11-23",
     accent: "#f2c230"
   }
